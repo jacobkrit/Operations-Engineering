@@ -1,8 +1,6 @@
-# Operations-Engineering
+# Operations Engineering
 
+- User Management 
+- Group Management 
+- Permissions 
 
-
-
-# References
-- [CAMMS Linux-Commands](https://github.com/jasonjamsden/CAMMS_Tutorials/tree/main/Linux-Commands)
-- [Text](https:///.com)

@@ -1,4 +1,17 @@
+# User & Group Management
+
+Proper User Account Management enables Linux to enforce access controls (permissions) and audit who does what on the system. This authentication provides access to resources and a customized, user-specific environment.
+
+By running the basic command `ls -l` in any Linux directory, you can see a quick overview of each file or directory that is a part of that directory, including its size, last modification date, owner (user), group membership, and access mode:
+
+<img src="images/ls-l.jpg" alt="ls -l" width="500px">
+
+As Linux administrator you can modify those permissions
+
+
 # Users Management
+
+Users must authenticate to any system they need to use. The user's identity is based on their user account. 
 
 | Command  | Description|
 |---|---| 
@@ -7,6 +20,9 @@
 |`users`| list of all users  currently logged in according to system (actual users not system users) |  
 |```exit```| Leave user you logged in (or if you are admin exit from server)|  
 |```su - [USERNAME]``` OR ```sudo -i [USERNAME]]```| change user to the user with name: [USERNAME] |
+|```sudo getent group sudo```| list of accounts that belong to the sudo Permissions|  
+
+
 
 
 
@@ -29,7 +45,7 @@ Contains one entry per line for each user. Fields are separated by a colon (:) s
     - UIDs 1-99 are reserved for other predefined accounts-
     - UIDs 100-999 are reserved by system for administrative and system accounts/groups.
     - UIDs 1000+ are reserved for user accounts (admin user has usually UID: 1000)
-1. **Group ID (GID)**: The primary group ID (stored in /etc/group file)
+1. **Group ID (GID)**: The **primary** group ID (stored in /etc/group file)
 1. **User ID Info (GECOS)**: The comment field. It allow you to add extra information about the users.
     - such as user’s full name, phone number etc. This field use by finger command.
 1. **Home directory**: The absolute path to the directory the user will be in when they log in. 
@@ -71,9 +87,27 @@ When you create a user as admin you didn't set a password for this user so you n
 
 | Command  | Description|
 |---|---| 
-|```sudo passwd <user_name>```| Change userpassword |  
+|```sudo passwd [USERNAME]```| Change userpassword |  
  
- 
+
+### Modify Users' info:
+
+| Command  | Description|
+|---|---| 
+|```sudo usermod -aG [GROUPNAME] [USERNAME]```| Add a user [USERNAME] to a group [USERNAME]|  
+|```sudo usermod -g [GROUPNAME] [USERNAME]```| Change the primary group of the user |  
+|```sudo usermod -d [USERNAME] [GROUPNAME]```| Removing a user from a Group |  
+|```sudo usermod -L [USERNAME]```| Lock user account |  
+|```sudo usermod -U [USERNAME]```| Unlock user account |  
+|```sudo usermod -e [YYYY-MM-DD] [USERNAME]```| Set an expiry date to the user account |  
+|```sudo usermod -u [UID] [USERNAME]```|  Change the UID of a user |  
+|```sudo usermod -l [NEW_USERNAME] [OLD_USERNAME]```| Change the name a user|  
+|```sudo usermod -md [NEW_HOME_DIR] [USERNAME]```| You can change the home directory of the user to another directory|  
+|```sudo usermod -s [NEW_SHELL_PATH] [USERNAME]```| Change the default shell of a user |  
+
+**Notes:**
+- You may execute the same command with the `gpasswd` command (i.e. `sudo gpasswd -aG [GROUPNAME] [USERNAME]` 
+
  
 ### `/etc/shadow` File:
 
@@ -100,18 +134,73 @@ Contains one entry per line for each user. Fields are separated by a colon (:) s
 8. **Expire**: The date of expiration of the account, expressed as the number of days since Jan 1, 1970.
 
 
+# Group Management 
+
+It's more efficient to group user accounts with similar access requirements than to manage permissions on a user-by-user basis. Therefore, system administrations need to be comfortable with the process of creating, modifying, and deleting groups.
 
  | Command  | Description|
  |---|---| 
- |```sudo getent group sudo```| list of accounts that belong to the sudo Permissions|  
- |` `|  |  
- |` `|  |  
+ |```groups```| list the groups which the current user is a member of with the first one being the primary|  
+ |```groups [USERNAME]```| list the groups which the [USERNAME] is a member of  with the first one being the primary|  
  
+**Notes:**
+- Each user from the `/etc/passwd` file belongs to one primary group. There is no difference between **primary** and **supplementary** groups, any of the groups can be primary and/or supplementary, it is just a reference, if a particular group is assigned to a user in the `/etc/passwd` as the one (primary) group.
+
+
+### `/etc/group` File:
+Similar to the `/etc/passwd` file above, the `/etc/group` file contains group account information:
+- `cat /etc/group`: prints All Groups info 
+    - `cat /etc/group | wc -l`: prints the number of all groups
+    - `cat /etc/group | grep [GROUP_NAME]`: print the line of the particular [GROUP_NAME]
+
+### `/etc/group` Fields: 
+Contains one entry per line for each group. Fields are separated by a colon (:) symbol. Total of seven fields as follows: 
+
+<img src="images/etc-group.jpg" alt="groups" width="500px">
+
+`groupname:group-password:GID:username-list`
+
+1. **groupname**: Contains the name assigned to the group.
+2. **group-password (x)**: x in this field indicates that shadow passwords are used.
+3. **GID**: Contains the group’s GID number.
+4. **username-list**: List of users that are members of the group
+
+
+### Add Groups:
+
+ | Command  | Description|
+ |---|---| 
+ |`sudo groupadd [GROUP_NAME]`| Add a group account with name: [GROUP_NAME] |  
+
+
+**Notes:**
+- When you create a new user a new group with this user name is created as well
+- Best practices is not used use group password
+
+### Remove Groups:
+
+ | Command  | Description|
+ |---|---| 
+ |`sudo groupdel [GROUP_NAME]`| deletes the group with name: [GROUP_NAME] |  
+ |`sudo userdel -f [USERNAME]`| deletes the user with name: [USERNAME] AND their home directory |  
 
 
 
+### Practical Groups Management Examples:
+
+#### **SSH Group**:
+A practical example of group management is to give SSH access to users. In the `/etc/ssh/sshd_config` file, you can modify who can access the server via the SSH command by including the line `AllowUsers [USERNAME_A] [USERNAME_B] [USERNAME_C]`. However, instead of adding or removing each user every time in this file, which may cause you to forget someone, it is better practice to include the line `AllowGroups [SSH-ACCESS-GROUP]` and add all the users you want to this particular group `[SSH-ACCESS-GROUP]`.
+
+
+ 
+ 
+ 
 **References**: 
-- [Linux Crash Course - Managing Users](https://www.youtube.com/watch?v=19WOD84JFxA)
+- [How to manage users and groups in Linux](https://www.redhat.com/sysadmin/linux-user-group-management)
+- [Video: Linux Crash Course - Managing Users](https://www.youtube.com/watch?v=19WOD84JFxA)
 - [Understanding /etc/passwd File Format](https://www.cyberciti.biz/faq/understanding-etcpasswd-file-format/)
 - [Understanding /etc/shadow file format on Linux](https://www.cyberciti.biz/faq/understanding-etcshadow-file/)
+- [Understanding /etc/group file](https://www.thegeekdiary.com/etcgroup-file-explained/)
+- [Video: Managing Groups](https://www.youtube.com/watch?v=GnlgAD8-GhE)
+- [CAMMS Linux-Commands](https://github.com/jasonjamsden/CAMMS_Tutorials/tree/main/Linux-Commands)
 - [Text](https:///.com)
