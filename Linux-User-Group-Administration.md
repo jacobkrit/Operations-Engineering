@@ -132,8 +132,8 @@ Contains one entry per line for each user. Fields are separated by a colon (:) s
 6. **Warn**: The number of days before password is to expire that user is warned that his/her password must be changed
 7. **Inactive**: The number of days after password expires that account is disabled.
 8. **Expire**: The date of expiration of the account, expressed as the number of days since Jan 1, 1970.
-
-
+ 
+ 
 # Group Management 
 
 It's more efficient to group user accounts with similar access requirements than to manage permissions on a user-by-user basis. Therefore, system administrations need to be comfortable with the process of creating, modifying, and deleting groups.
@@ -192,8 +192,94 @@ Contains one entry per line for each group. Fields are separated by a colon (:) 
 A practical example of group management is to give SSH access to users. In the `/etc/ssh/sshd_config` file, you can modify who can access the server via the SSH command by including the line `AllowUsers [USERNAME_A] [USERNAME_B] [USERNAME_C]`. However, instead of adding or removing each user every time in this file, which may cause you to forget someone, it is better practice to include the line `AllowGroups [SSH-ACCESS-GROUP]` and add all the users you want to this particular group `[SSH-ACCESS-GROUP]`.
 
 
+
+### Changing ownership to another USER & to Group
+
+| Command  | Description|
+|---|---| 
+|`chown -R [NEW_USERNAME] [dir]`| Change the ownership of [dir] to the new [NEW_USERNAME] |
+|`chown -R [NEW_USERNAME]:[NEW_GROUPNAME] [dir]`| Change the ownership of [dir] to the new [NEW_USERNAME] and to new [NEW_GROUPNAME] |
+
+# Permissions
+
+File permissions define which user or system accounts have permissions to read, write, and execute specific files.
+
+By executing the command `ls -l` you see in the first column the permission information: 
+
+<img src="images/linux_file_permissions.png" alt="permissions" width="500px">
+
+Type of file (i.e. file, directory, etc) and the permissions read (**r**), write (**w**), and execute (**x**) for **user**, **group**, and **other** (in that order)
+
+**File Types**: `-`: = Regular File; `d` = Directory; `l` = Symbolic Link; `b` = Block Special Device; `c` = Character Device; `s` = Unix Socket (local domain socket); `p` = Named Pipe
+
+### Setting Permissions
+
+The symbolic method uses the following syntax:
+
+ | Command  | Description|
+ |---|---| 
+ |`chmod WhoWhatWhich [filename] or [dir]`| Set Up Permissions on [filename] or [dir] |  
+
+Where:
+
+* `Who` - represents identities: `u`,`g`,`o`,`a` (user, group, other, all)
+* `What` - represents actions: `+`, `-`, = (add, remove, set exact)
+* `Which` - represents access levels: `r`, `w`, `x` (read, write, execute)
+
+An example adding read and write permissions to a file named [filename] for user and group: `chmod ug+rw [filename]`
+
+
+### Setting Permissions with numerical method
+
+The numeric method is based on the following syntax with 3 digits:
+
+ | Command  | Description|
+ |---|---| 
+ |`chmod ### [filename] or [dir]`| Set Up Permissions ### on [filename] or [dir] |  
+
+From left to right, each of the 3 character # represents an access level to a Specific level: user, group, and others. To determine what each digit is, we sum the values of each digit:
+
+* Start at 0
+* If the read permission should be set, add 4
+* If the write permission should be set, add 2
+* If the execute permission should be set, add 1
+
+An example adding `-rw-r-x---`to a file named [filename] for user and group: `chmod 650 [filename]` where 1st digit 6=4+2(w+r); 2nd digit 5=4+1(r+x); 3rd digit 0=0(no permission)
+
+
+### Special Permissions
+
+Special permissions make up a fourth access level in addition to user, group, and other. Special permissions allow for additional privileges over the standard permission:
+- **SUID**: (replaces `x` with `s` or `S`) special permission for the user access level has a single function: A file with SUID always executes **as the user who owns the file, regardless of the user passing the command**: `-rwsr-xr--`. If the file owner doesn't have execute permissions, then use an uppercase S here `-rwSr-xr--`. 
+- **SGID**: (replaces `x` with `s` or `S`) If set on a file, it allows the file to be executed as the group that owns the file (similar to SUID): `-rwxr-sr--` or `-rwxr-Sr--`. If set on a directory, any files created in the directory will have their group ownership set to that of the directory owner: `drwxrws---`.
+    - It is especially useful for directories that are often used in collaborative efforts between members of a group. Any member of the group can access any new file. This applies to the execution of files, as well. 
+- **Sticky Bit**: (replaces `x` with `t`) This permission does not affect individual files. affects **directory level**, it restricts **file deletion**. Only the owner (and root) of a file can remove the file within that directory. A common example of this is the `/tmp` directory: `drwxrwxrwt`
+
+### Setting Special Permissions
+
+ | Command  | Description|
+ |---|---| 
+ |`chmod u+s [filename]`| Set Up Setuid (SUID) on [filename] |  
+ |`chmod g+s [filename]`| Set Up Setgid (SGID) on [filename] | 
+ |`chmod g+s [dir]`| Set Up Setgid (SGID) on [[dir]] | 
+ |`chmod +t [dir]`| Set Up Sticky Bit on [[dir]] | 
  
- 
+
+### Setting Special Permissions with numerical method
+
+We need to pass a fourth, preceding digit in our chmod command: 
+
+ | Command  | Description|
+ |---|---| 
+ |`chmod X### [filename] or [dir]`| Set Up Special Permissions on [filename] or [dir]|  
+
+Where `X` has the following options:
+* Start at 0
+* SUID = 4
+* SGID = 2
+* Sticky = 1
+
+
  
 **References**: 
 - [How to manage users and groups in Linux](https://www.redhat.com/sysadmin/linux-user-group-management)
@@ -203,4 +289,7 @@ A practical example of group management is to give SSH access to users. In the `
 - [Understanding /etc/group file](https://www.thegeekdiary.com/etcgroup-file-explained/)
 - [Video: Managing Groups](https://www.youtube.com/watch?v=GnlgAD8-GhE)
 - [CAMMS Linux-Commands](https://github.com/jasonjamsden/CAMMS_Tutorials/tree/main/Linux-Commands)
+- [Linux File Permissions, chmod, & umask](https://tutonics.com/2012/12/linux-file-permissions-chmod-umask.html)
+- [Linux permissions: SUID, SGID, and sticky bit](https://www.redhat.com/sysadmin/suid-sgid-sticky-bit)
 - [Text](https:///.com)
+
