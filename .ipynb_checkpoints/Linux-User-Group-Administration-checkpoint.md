@@ -193,13 +193,6 @@ A practical example of group management is to give SSH access to users. In the `
 
 
 
-### Changing ownership to another USER & to Group
-
-| Command  | Description|
-|---|---| 
-|`chown -R [NEW_USERNAME] [dir]`| Change the ownership of [dir] to the new [NEW_USERNAME] |
-|`chown -R [NEW_USERNAME]:[NEW_GROUPNAME] [dir]`| Change the ownership of [dir] to the new [NEW_USERNAME] and to new [NEW_GROUPNAME] |
-
 # Permissions
 
 File permissions define which user or system accounts have permissions to read, write, and execute specific files.
