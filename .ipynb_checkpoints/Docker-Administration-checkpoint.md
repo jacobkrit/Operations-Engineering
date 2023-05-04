@@ -36,6 +36,24 @@
 |`docker network create NETWORK_NAME`|create a docker network|  
 |` `| |  
 
+There are two categories of commands (basic commands & management commands) in management commands arguments (options) are required
+
+![docker-commands](img/docker-commands.jpg "docker-commands")
+
+<img src="images/docker-commands.jpg" alt="docker-commands" width="500px">
+
+Alternative Docker commands:
+
+| Command  | Command| Description|
+|---|---|---|
+|`docker container ls`|`docker ps`| list of processes | 
+|`docker builder build `|`docker build`| build a new image |
+|`docker container inspect`|`docker inspect`| inspect specific container |
+|`docker container commit`|`docker commit`| create image on specific container|
+|`docker container run`|`docker run`| start a new container |
+ 
+
+ 
 
 # Docker Architecture
 
