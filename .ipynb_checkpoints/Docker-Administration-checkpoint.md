@@ -38,7 +38,6 @@
 
 There are two categories of commands (basic commands & management commands) in management commands arguments (options) are required
 
-![docker-commands](img/docker-commands.jpg "docker-commands")
 
 <img src="images/docker-commands.jpg" alt="docker-commands" width="500px">
 
@@ -52,8 +51,16 @@ Alternative Docker commands:
 |`docker container commit`|`docker commit`| create image on specific container|
 |`docker container run`|`docker run`| start a new container |
  
+## Basic Docker Options
 
- 
+
+
+| [OPTIONS]   | Description|
+|---|---| 
+|`-d`| detached mode : run the container without the terminal: `docker run -d [IMAGE_NAME]`| 
+|`-a`| Print container that are running and not running | 
+|`- p[Host Port Number]:[Binding Port Number]`| Bind port of your host (port of the host <-- port which you exernaly send requests) to the container (port of tha you are binding this). **Port**: specifies on which port the container is listening to the incomming request. example: `docker run -p6000:6379 [IMAGE_NAME]`| 
+
 
 # Docker Architecture
 
@@ -69,17 +76,25 @@ Docker uses a Client/Server Architecture. The Docker Client (AKA **docker**) tal
 
 ## Docker objects
 
-- **Containers**: is an **isolated** place where an **application** runs without affecting the rest of the system and without the system impacting the application. Because they are isolated, containers are well-suited for securely running software like databases or web applications that need access to sensitive resources without giving access to every user on the system.
+- **Container**: is an **isolated** place where an **application** runs without affecting the rest of the system and without the system impacting the application. Because they are isolated, containers are well-suited for securely running software like databases or web applications that need access to sensitive resources without giving access to every user on the system.
     - Containers run natively on Linux and shares the host machine’s kernel, they are **lightweight**, not using more memory than other executables. If you stop a container, it will not automatically restart unless you configure it that way. Containers can be much **more efficient** than virtual machines because they don’t need the overhead of an entire operating system. They share a single kernel with other containers and boot in seconds instead of minutes.
     - Use containers for **packaging an application** with all the components it needs, then ship it all out as one unit. This approach is popular because it eliminates the friction between development, QA, and production environments, enabling faster software shipping. Building and deploying applications inside software containers eliminates “works on my machine” problems when collaborating on code with fellow developers.
     - You can **create**, **start**, **stop**, **move**, or **delete** a container using the **Docker API** or CLI. You can connect a container to one or more networks, attach storage to it, or even create a new image based on its current state.
+    - **Container Layers** Each time Docker launches a container from an image, it adds a thin writable layer, known as the container layer, which stores all changes to the container throughout its runtime. As this layer is the only difference between a live operational container and the source Docker image itself, any number of like-for-like containers can potentially share access to the same underlying image while maintaining their own individual state.
 
-- **Images**: is a read-only template with instructions for creating a Docker container. Think of an image like a **blueprint** or snapshot of what will be in a container when it runs. A Docker image executes code in a Docker container.  
+- **Image**: is a read-only template with instructions for creating a Docker container. Think of an image like a **blueprint** or snapshot of what will be in a container when it runs. Basically an image bundles together all the essentials such as installations, application code, and dependencies in order to execute code in a Docker container.
     - Docker **container as a running image instance**. You can create many containers from the same image, each with its own unique data and state.
     - Often, an image is based on another image, with some additional customization (i.e. build an image which is based on the ubuntu image, but installs the Apache web server).
     - To build an image, you create a **Dockerfile** with a simple syntax for defining the steps needed to create the image and run it. Each instruction in a Dockerfile creates a **layer in the image**. When you change the Dockerfile and rebuild the image, only those layers which have changed are rebuilt. This is part of what makes images so lightweight, small, and fast, when compared to other virtualization technologies.
 
-## Docker Execution Process
+    - **Image Layers** Each of the files that make up a Docker image is known as a layer. These layers form a series of intermediate images, built one on top of the other in stages, where **each layer is dependent on the layer immediately below it**. The **hierarchy of your layers is key to efficient** lifecycle management of your Docker images. Thus, you should organize layers that change most often as high up the stack as possible. This is because, when you make changes to a layer in your image, Docker not only rebuilds that particular layer, but all layers built from it.  
+        - Change to a layer at the top of a stack involves the least amount of computational work to rebuild the entire image.
+        - **Parent Image** is the first layer of a Docker image.  It’s the foundation upon which all other layers are built and provides the basic building blocks for your container environments.
+            - A typical parent image may be a stripped-down Linux distribution or come with a preinstalled service
+        - **Base image** is an empty first layer, which allows you to build your Docker images from scratch; give you full control over the contents of images.
+    
+    
+## Docker Execution Process (Interactive Example)
 
 The following happens When you run this command: `docker run -i -t ubuntu /bin/bash`:
 
@@ -97,7 +112,7 @@ The following happens When you run this command: `docker run -i -t ubuntu /bin/b
 
 
 
-## Basic Docker `-it` Option
+## Basic Docker `-it` Option (Interactive Example)
 
 - Without [Option] --> `docker run ubuntu`
     - Searches for Ubuntu image(copy from registry if none)
@@ -113,6 +128,60 @@ The following happens When you run this command: `docker run -i -t ubuntu /bin/b
     - if you open a new terminal and execute `docker ps` you will see this container running
     - you may exit this shell, as usual with `exit` command and then also from the `docker ps` with be terminated.
     
+
+
+## Docker Images Creation
+
+You can create a Docker image by using one of two methods:
+- **Interactive**: By running a container from an existing Docker image (example run ubuntu: `docker run -it ubuntu`), manually changing that container environment through a series of live steps (example install anaconda: `pip install pymeasure`), and saving the resulting state as a new image (find the container's id after the installation and from another terminal execute: `docker commit containers_id`) you will find this update container as a new image when you execute: `docker images`.
+    - Advantages: Quickest and simplest way to create Docker images. Ideal for testing, troubleshooting, determining dependencies, and validating processes.
+    - Disadvantages: Difficult lifecycle management, requiring error-prone manual reconfiguration of live interactive processes.  Create unoptimized images with unnecessary layers.
+
+- **Dockerfile**: By constructing a plain-text file, known as a Dockerfile, which provides the specifications for creating a Docker image. This is a three-step process whereby you create the Dockerfile and add the commands you need to assemble the image.
+    - Advantages: Clean, compact and repeatable recipe-based images. Easier lifecycle management and easier integration into continuous integration (CI) and continuous delivery (CD) processes. Clear self-documented record of steps taken to assemble the image.
+    - Disadvantages: More difficult for beginners and more time consuming to create from scratch.
+
+Example `Dockerfile`:
+
+    
+    FROM ubuntu:18.04       # Use the official Ubuntu 18.04 as base
+    RUN apt-get update &&   # Install pymeasure
+    pip install pymeasure 
+
+The following table shows you those Dockerfile statements you’re most likely to use:
+
+| Command   | Purpose - Description|
+|---|---| 
+| FROM | To specify the parent image.| 
+| WORKDIR | To set the working directory for any commands that follow in the Dockerfile.| 
+|RUN | To install any applications and packages required for your container.| 
+|COPY |To copy over files or directories from a specific location. | 
+|ADD |As COPY, but also able to handle remote URLs and unpack compressed files.| 
+|ENTRYPOINT | Command that will always be executed when the container starts. If not specified, the default is /bin/sh -c| 
+| CMD|Arguments passed to the entrypoint. If ENTRYPOINT is not set (defaults to /bin/sh -c), the CMD will be the commands the container executes. | 
+|EXPOSE | To define which port through which to access your container application.| 
+|LABEL|To add metadata to the image| 
+| | | 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
 
 
 ## Docker Compose
