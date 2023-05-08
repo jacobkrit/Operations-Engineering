@@ -27,6 +27,7 @@
 |`docker restart [OPTIONS] [Container_ID]`|restart one or more containers|  
 |`docker start [OPTIONS] [Container_ID]`|restart one or more containers|  
 |`docker kill [OPTIONS] [Container_Name]`| kill one or more containers|  
+|`docker rm [OPTIONS] [Container_Name]`| delete one or more containers|  
 |`docker logs [Container_ID]`|helps debugging|  
 |`docker exec -it Container_ID COMMAND`|run a command in a running container|  
 |`docker exec -it Container_ID /bin/bash`|get the bash as vm as a root user|  
@@ -133,59 +134,106 @@ The following happens When you run this command: `docker run -i -t ubuntu /bin/b
 ## Docker Images Creation
 
 You can create a Docker image by using one of two methods:
-- **Interactive**: By running a container from an existing Docker image (example run ubuntu: `docker run -it ubuntu`), manually changing that container environment through a series of live steps (example install anaconda: `pip install pymeasure`), and saving the resulting state as a new image (find the container's id after the installation and from another terminal execute: `docker commit containers_id`) you will find this update container as a new image when you execute: `docker images`.
+- **(1) Interactive**: By running a container from an existing Docker image (example run ubuntu: `docker run -it ubuntu`), manually changing that container environment through a series of live steps (example update: `apt-get update`), and saving the resulting state as a new image (find the container's id after the installation and from another terminal execute: `docker commit containers_id`) you will find this update container as a new image when you execute: `docker images`.
     - Advantages: Quickest and simplest way to create Docker images. Ideal for testing, troubleshooting, determining dependencies, and validating processes.
     - Disadvantages: Difficult lifecycle management, requiring error-prone manual reconfiguration of live interactive processes.  Create unoptimized images with unnecessary layers.
 
-- **Dockerfile**: By constructing a plain-text file, known as a Dockerfile, which provides the specifications for creating a Docker image. This is a three-step process whereby you create the Dockerfile and add the commands you need to assemble the image.
+- **(2) Dockerfile**: By constructing a plain-text file, known as a Dockerfile, which provides the specifications for creating a Docker image; **like a blueprint**. This is a three-step process whereby you create the Dockerfile and add the commands you need to assemble the image.
     - Advantages: Clean, compact and repeatable recipe-based images. Easier lifecycle management and easier integration into continuous integration (CI) and continuous delivery (CD) processes. Clear self-documented record of steps taken to assemble the image.
     - Disadvantages: More difficult for beginners and more time consuming to create from scratch.
 
-Example `Dockerfile`:
 
-    
-    FROM ubuntu:18.04       # Use the official Ubuntu 18.04 as base
-    RUN apt-get update &&   # Install pymeasure
-    pip install pymeasure 
+## Dockerfile Example
+
+Docker can **build images** automatically by reading the instructions from a Dockerfile. A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Dockerfile is the blueprint of your project. Example `Dockerfile`:
+
+- **(0.a) Project Directory Creation**
+ 
+    A. Make a folder with the files used in this Docker image
+    B. `cd` to this Directory
+
+- **(1) Create a Dockerfile**
+
+    A. Create a file named `DockerFile`
+    B. Include the following lines in the `DockerFile` file: 
+
+    ```
+    FROM ubuntu
+    WORKDIR /home/admin/docker_projects/[DIRECTORY_NAME]
+    RUN apt-get update
+    ENTRYPOINT pwd
+    ```
+
+- **(2) Build an image** based on this dockerfile:
+
+    A. After saving the `DockerFile` file and while you are inside this directory execute:
+
+    `docker build -t [MY_IMAGE_NAME]:[VERSION_NUMBER] .`
+
+- **(3) Run the image** as a container:
+
+    `docker run [MY_IMAGE_NAME]:[VERSION_NUMBER]`
+
+
 
 The following table shows you those Dockerfile statements you’re most likely to use:
 
 | Command   | Purpose - Description|
 |---|---| 
-| FROM | To specify the parent image.| 
-| WORKDIR | To set the working directory for any commands that follow in the Dockerfile.| 
-|RUN | To install any applications and packages required for your container.| 
-|COPY |To copy over files or directories from a specific location. | 
-|ADD |As COPY, but also able to handle remote URLs and unpack compressed files.| 
-|ENTRYPOINT | Command that will always be executed when the container starts. If not specified, the default is /bin/sh -c| 
-| CMD|Arguments passed to the entrypoint. If ENTRYPOINT is not set (defaults to /bin/sh -c), the CMD will be the commands the container executes. | 
-|EXPOSE | To define which port through which to access your container application.| 
-|LABEL|To add metadata to the image| 
+| `FROM <image>:<tag>` | (*Must included*) Specify the parent image| 
+| `MAINTAINER <name>` | (*Optional*) set the Author field of the generated images| 
+| `WORKDIR </path/to/workdir>` | (*Best Practice*) Set working directory for any commands that follow in the Dockerfile \* | 
+| `ENV <key> <value>` | (*Optional*) Pass Docker Environment Variables During The Image Build | 
+|`RUN <command>` | (*Must included*) To install any applications and packages required for your container. \* | 
+|`COPY <src> <dest>` |To copy over files or directories from a specific location. | 
+|`ADD <src> <dest>` |As COPY, but also able to handle remote URLs and unpack compressed files.| 
+|`ENTRYPOINT <command> <param1> <param2>` | Command that will always be executed when the container starts. If not specified, the default is /bin/sh -c| 
+| `CMD <command> <param1> <param2>` | Arguments passed to the entrypoint. If ENTRYPOINT is not set (defaults to /bin/sh -c), the CMD will be the commands the container executes. | 
+|`EXPOSE <port>` | To define which port through which to access your container application.| 
+|`LABEL <key>=<value>` |To add metadata to the image| 
 | | | 
 
+\* You can have multiple WORKDIR instructions in your Dockerfile which are build as the layers go down
 
+\* the RUN statements in your Dockerfile are only executed during the build stage, i.e. using docker build and not with docker run
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 
 
 
 
 ## Docker Compose
-        
+Compose is a tool for defining and running multi-container Docker applications with just one file. With Compose, you use a **YAML** file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration. For example for the mongodb we executed above we create a file name `mongo.yaml` and include the following translation:
+
+```
+version: '3'
+services:
+    mongodb:
+        image: mongo
+        ports:
+            - 27017:27017
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=password
+        mongo-express:
+            image: mongo-express
+        ports:
+            - 8080:8081 
+        environment:
+            - ME+CONFIG MONGODB_ADMINUSERNAME=admin
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+            - ME_CONFIG_MONGODB_SERVER=mongodb
+```
+
+Execute the command (no containers should be running): `docker-compose -f mongo.yaml up` and 
+
+
+
+
+
+
+
+
+
 
 
 # References
@@ -193,7 +241,8 @@ The following table shows you those Dockerfile statements you’re most likely t
 - [Video - The Complete Practical Docker Guide](https://subscription.packtpub.com/video/cloud-networking/9781803247892)
 - [Docker overview](https://docs.docker.com/get-started/overview)
 - [Docker image vs container](https://circleci.com/blog/docker-image-vs-container/)
-
+- [Understanding and Building Docker Images](https://jfrog.com/knowledge-base/a-beginners-guide-to-understanding-and-building-docker-images/)
+- [Dockerfile](https://kapeli.com/cheat_sheets/Dockerfile.docset/Contents/Resources/Documents/index)
 
 ```{ - [Text](https:///.com) }
 ```
