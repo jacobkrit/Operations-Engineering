@@ -143,7 +143,7 @@ You can create a Docker image by using one of two methods:
     - Disadvantages: More difficult for beginners and more time consuming to create from scratch.
 
 
-## Dockerfile Example
+## Dockerfile Example Basic
 
 Docker can **build images** automatically by reading the instructions from a Dockerfile. A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Dockerfile is the blueprint of your project. Example `Dockerfile`:
 
@@ -197,6 +197,12 @@ The following table shows you those Dockerfile statements you’re most likely t
 
 \* the RUN statements in your Dockerfile are only executed during the build stage, i.e. using docker build and not with docker run
 
+
+## Dockerfile Example Environment Variables
+
+[Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
+
+ENV values are accessible during the build, and afterwards once the container runs. 
 
 
 
