@@ -208,6 +208,7 @@ Docker ENV and ARG are pretty similar, but not quite the same.
 
 ## Dockerfile Example Environment Variables
 
+<<<<<<< Updated upstream
 - **(0.a) Project Directory Creation**
  
     A. Make a folder with the files used in this Docker image
@@ -262,7 +263,61 @@ ENV values are accessible during the build, and afterwards once the container ru
 
 
 ENV values are accessible during the build, and afterwards once the container runs. 
+=======
+- **(0) Project Directory Creation**
+ 
+    A. Make a folder with the files used in this Docker image
+    B. `cd` to this Directory
 
+- **(1) Create a Dockerfile**
+>>>>>>> Stashed changes
+
+    A. Create a file named `DockerFile`
+    B. Include the following lines in the `DockerFile` file: 
+
+    ```
+    FROM ubuntu
+    WORKDIR /home/admin/docker_projects/proj2
+
+    ARG my_arg
+    RUN echo $my_arg
+    
+    ENV my_var=$my_arg
+    ENTRYPOINT echo $my_var
+    ```
+
+- **(2) Build an image** based on this dockerfile:
+
+    After saving the `DockerFile` file and while you are inside this directory execute:
+
+    `docker build -t my_proj2 --build-arg my_arg="TEST_VAR" .`
+    
+    As you will see during the build the value TEST_VAR will be printed
+
+- **(3) Run the image** as a container:
+
+    A. **Without** Environment Variable
+
+    ` docker run my_proj2`
+    
+     As you will see the value **TEST_VAR** will be printed
+    
+     B. **With** Environment Variable
+
+    ` docker run --env my_var='TEST_VAR2' my_proj2`
+    
+     As you will see the value **TEST_VAR2** will be printed
+
+ 
+    
+# Environment Variables from a file (env_file)
+
+Instead of writing the variables out or hard-coding them  we can specify a file to read values from. The contents of such a file look something like this:
+
+   [Text](https:///.com) 
+   
+
+https://vsupalov.com/docker-arg-env-variable-guide/#arg-and-env-availability
 
 
 
@@ -308,6 +363,8 @@ Execute the command (no containers should be running): `docker-compose -f mongo.
 - [Docker image vs container](https://circleci.com/blog/docker-image-vs-container/)
 - [Understanding and Building Docker Images](https://jfrog.com/knowledge-base/a-beginners-guide-to-understanding-and-building-docker-images/)
 - [Dockerfile](https://kapeli.com/cheat_sheets/Dockerfile.docset/Contents/Resources/Documents/index)
+- [Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
+
 
 ```{ - [Text](https:///.com) }
 ```
