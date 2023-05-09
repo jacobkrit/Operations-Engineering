@@ -208,7 +208,7 @@ Docker ENV and ARG are pretty similar, but not quite the same.
 
 ## Dockerfile Example Environment Variables
 
-- **(0.a) Project Directory Creation**
+- **(0) Project Directory Creation**
  
     A. Make a folder with the files used in this Docker image
     B. `cd` to this Directory
@@ -253,16 +253,14 @@ Docker ENV and ARG are pretty similar, but not quite the same.
 
  
     
-[Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
+# Environment Variables from a file (env_file)
 
+Instead of writing the variables out or hard-coding them  we can specify a file to read values from. The contents of such a file look something like this:
 
+   [Text](https:///.com) 
    
 
-ENV values are accessible during the build, and afterwards once the container runs. You can set ENV values in your Dockerfile - either by hardcoding them, or in a dynamic fashion.
-
-
-ENV values are accessible during the build, and afterwards once the container runs. 
-
+https://vsupalov.com/docker-arg-env-variable-guide/#arg-and-env-availability
 
 
 
@@ -308,6 +306,8 @@ Execute the command (no containers should be running): `docker-compose -f mongo.
 - [Docker image vs container](https://circleci.com/blog/docker-image-vs-container/)
 - [Understanding and Building Docker Images](https://jfrog.com/knowledge-base/a-beginners-guide-to-understanding-and-building-docker-images/)
 - [Dockerfile](https://kapeli.com/cheat_sheets/Dockerfile.docset/Contents/Resources/Documents/index)
+- [Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
+
 
 ```{ - [Text](https:///.com) }
 ```
