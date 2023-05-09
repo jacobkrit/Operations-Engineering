@@ -183,10 +183,11 @@ The following table shows you those Dockerfile statements you’re most likely t
 | `FROM <image>:<tag>` | (*Must included*) Specify the parent image| 
 | `MAINTAINER <name>` | (*Optional*) set the Author field of the generated images| 
 | `WORKDIR </path/to/workdir>` | (*Best Practice*) Set working directory for any commands that follow in the Dockerfile \* | 
-| `ENV <key> <value>` | (*Optional*) Pass Docker Environment Variables During The Image Build | 
+| `ARG <key> <value>` | (*Optional*) Pass Docker Environment Variables During The Image Build  with `--build-arg`| 
 |`RUN <command>` | (*Must included*) To install any applications and packages required for your container. \* | 
 |`COPY <src> <dest>` |To copy over files or directories from a specific location. | 
 |`ADD <src> <dest>` |As COPY, but also able to handle remote URLs and unpack compressed files.| 
+| `ENV <key> <value>` | (*Optional*) Pass Docker Environment Variables afterwards once the container runs with `--env`| 
 |`ENTRYPOINT <command> <param1> <param2>` | Command that will always be executed when the container starts. If not specified, the default is /bin/sh -c| 
 | `CMD <command> <param1> <param2>` | Arguments passed to the entrypoint. If ENTRYPOINT is not set (defaults to /bin/sh -c), the CMD will be the commands the container executes. | 
 |`EXPOSE <port>` | To define which port through which to access your container application.| 
@@ -198,9 +199,67 @@ The following table shows you those Dockerfile statements you’re most likely t
 \* the RUN statements in your Dockerfile are only executed during the build stage, i.e. using docker build and not with docker run
 
 
+## Environment Variables
+
+Docker ENV and ARG are pretty similar, but not quite the same.
+- ARG can be set during the image build with `--build-arg` 
+- ENV can be set during the container running with `--env`
+
+
 ## Dockerfile Example Environment Variables
 
+- **(0.a) Project Directory Creation**
+ 
+    A. Make a folder with the files used in this Docker image
+    B. `cd` to this Directory
+
+- **(1) Create a Dockerfile**
+
+    A. Create a file named `DockerFile`
+    B. Include the following lines in the `DockerFile` file: 
+
+    ```
+    FROM ubuntu
+    WORKDIR /home/admin/docker_projects/proj2
+
+    ARG my_arg
+    RUN echo $my_arg
+    
+    ENV my_var=$my_arg
+    ENTRYPOINT echo $my_var
+    ```
+
+- **(2) Build an image** based on this dockerfile:
+
+    After saving the `DockerFile` file and while you are inside this directory execute:
+
+    `docker build -t my_proj2 --build-arg my_arg="TEST_VAR" .`
+    
+    As you will see during the build the value TEST_VAR will be printed
+
+- **(3) Run the image** as a container:
+
+    A. **Without** Environment Variable
+
+    ` docker run my_proj2`
+    
+     As you will see the value **TEST_VAR** will be printed
+    
+     B. **With** Environment Variable
+
+    ` docker run --env my_var='TEST_VAR2' my_proj2`
+    
+     As you will see the value **TEST_VAR2** will be printed
+
+ 
+    
 [Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
+
+
+   
+
+ENV values are accessible during the build, and afterwards once the container runs. You can set ENV values in your Dockerfile - either by hardcoding them, or in a dynamic fashion.
+
 
 ENV values are accessible during the build, and afterwards once the container runs. 
 
