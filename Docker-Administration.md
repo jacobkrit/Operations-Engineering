@@ -251,23 +251,187 @@ Docker ENV and ARG are pretty similar, but not quite the same.
     
      As you will see the value **TEST_VAR2** will be printed
 
- 
-    
-# Environment Variables from a file (env_file)
-
-Instead of writing the variables out or hard-coding them  we can specify a file to read values from. The contents of such a file look something like this:
-
-   [Text](https:///.com) 
-   
-
-https://vsupalov.com/docker-arg-env-variable-guide/#arg-and-env-availability
 
 
+# Docker Compose
 
-## Docker Compose
-Compose is a tool for defining and running multi-container Docker applications with just one file. With Compose, you use a **YAML** file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration. For example for the mongodb we executed above we create a file name `mongo.yaml` and include the following translation:
+Docker Compose offers a convenient solution for streamlining the process of **building multiple images and running containers**: 
+
+- Rather than manually creating each image and running containers one by one from the command line, Docker Compose allows you to perform these tasks all at once, by just including a `docker-compose.yml` file and executing `docker-compose [OPTIONS]` command.
+
+- Docker Compose is similar to a **Linux .sh** file that contain multiple Linux commands, which can be executed all at once.
+
+- Docker Compose **builds upon the concept of the DockerFile**, which serves as the blueprint for creating a single Docker image and running a container based on that image. **Expanding on this idea**, Docker Compose provides a **higher-level blueprint** for building multiple single Docker images and creating multiple containers with different dependencies.
+
+- Just like the DockerFile, Docker Compose utilizes a `docker-compose.yml` file. This file acts as a guide for building images and running containers with their respective dependencies based on the images. It's important to note that the `docker-compose.yml` file **does not overwrite the DockerFile for each image; instead, it works in conjunction with it by providing instructions on how each individual DockerFile should be built**.
+
+
+## Docker Compose Steps
+
+Using Compose is essentially a **three-step process**:
+
+1. For each independent apps/docker-images you want to build, as usual, create a folder with a `Dockerfile` file inside, as mentioned above (no difference).
+2. Create one file (the docker compose directory) with `docker-compose.yml` which will supervise all the independent apps/docker-images and their containers
+3. Run a `docker-compose up` command and the Docker compose command starts and runs your entire app. Execute the command (no containers should be running): `docker-compose [OPTIONS] up`. 
+
+
+## Basic `docker-compose.yml` Format
+
+In the `docker-compose.yml` file, we need to specify the version of the Compose file, at least one **service** (an image), and optionally volumes and networks:
+- **services** refer to the containers' configuration based on images, each service may be independent of each other.
+- **volumes** are physical areas of disk space shared between the host and a container, or even between containers. In other words, a volume is a shared directory in the host, visible from some or all containers.
+- **networks** define the communication rules between containers, and between a container and the host. Common network zones will make the containers' services discoverable by each other, while private zones will segregate them in virtual sandboxes.
 
 ```
+version: "3.7"
+services:
+    service-1:
+        image: service-1-image
+        ...
+    service-2:
+        image: service-2-image
+        ...
+    service-3:
+        image: service-3-image
+        ...
+    ...
+volumes:
+    ...
+networks:
+    ...
+```
+
+## Docker Compose Services
+
+
+There are multiple settings that we can apply to services:
+
+#####
+- **Example 1 - Pulling an Image**:
+    - In the `docker-compose.yml` you may use already builded images and run container based on them. These images may be custom images available locally at `docker images` or in the Docker Registry: 
+        ```
+        services: 
+            ...
+            service-X:
+                image: ubuntu:latest
+                container_name: my-ubuntu-container
+            ...
+            service-Y:
+                image: my_custom_image:latest
+                container_name: my-custom-container
+            ...
+        ```
+    - The `container_name` refers to the name when this container will be running
+    
+#####
+- **Example 2 - Building One Simple Image**:
+    - In the `docker-compose.yml` you may build an image available in the same repository. You need to have a `Dockerfile` under the same path with the usual instructions.
+    
+        ```
+        services: 
+            ...
+            service-X:
+                build: .
+                image: my-service-X-image-name
+                container_name: my-service-X-container
+            ...
+        ```    
+    - The `image` refers to the name when this image will be build
+    - The `container_name` refers to the name when this container will be running
+
+- **Example 3 - Building One Advanced Image**:
+    - More formally you may use the  specify the build under `context` and optionally use Dockerfile Specific file and arguments:    
+        ```
+        services: 
+            ...
+            service-X:
+                build:
+                    context: .
+                    dockerfile: Dockerfile-Specific-name
+                    args:
+                        ARG_NAME_1: ARG_VAL_1
+                        ARG_NAME_2: ARG_VAL_2
+                        ...
+                image: my-service-X-image-name
+                container_name: my-service-X-container
+            ...
+        ```    
+    - The `context` refers to the path where the DockerfileSpecific-name exists. if `.` is the same path 
+    - The `dockerfile` refers to the particular Dockerfile Specific name.
+    - The `args` refers to the  arguments passed during the image build as discussed above
+    - The `image` here refers to the name when this image will be build
+    - The `container_name` here refers to the name when this container will be running
+
+#####
+- **Example 4 - Building Multiple Images (Different Directories)**:
+    - In the `docker-compose.yml` you may build multiple images available in same repository. You need to have a `Dockerfile-X` with the usual instructions at each of the repositories.    
+        ```
+        services: 
+            ...
+            service-X:
+                build: .
+                dockerfile: Dockerfile-X
+                build: /path/to/image-service-X/dockerfile/
+                image: my-service-X-image-name
+                container_name: my-service-X-container
+            ...
+            service-Y:
+                build: .
+                dockerfile: Dockerfile-Y
+                image: my-service-Y-image-name
+                container_name: my-service-Y-container
+            ...
+        ```   
+        
+    - This `dockerfile:` defines from which `Dockerfile` each is should be build
+    - This `path/to/dockerfile` for each image may be absolute or relevant.
+    - The `image` here refers to the name when this image will be build.
+    - The `container_name` here refers to the name when this container will be running
+
+    
+
+#####
+- **Example 5 - Building Multiple Images (Different Directories)**:
+    - In the `docker-compose.yml` you may build multiple images available in the different repositories (app-image repositories). You need to have a `Dockerfile` with the usual instructions at each of the repositories.    
+        ```
+        services: 
+            ...
+            service-X:
+                build: /path/to/image-service-X/dockerfile/
+                image: my-service-X-image-name
+                container_name: my-service-X-container
+            ...
+            service-Y:
+                build: /path/to/image-service-Y/dockerfile/
+                image: my-service-Y-image-name
+                container_name: my-service-Y-container
+            ...
+        ```   
+        
+    - This `path/to/dockerfile` for each image may be absolute or relevant.
+    - The `image` here refers to the name when this image will be build.
+    - The `container_name` here refers to the name when this container will be running
+
+
+#####
+- **Example 6 - Building Remote Images**:
+    - In the `docker-compose.yml` you may build multiple images available in the different repositories (app-image repositories). You need to have a `Dockerfile` with the usual instructions at each of the repositories.    
+        ```
+        services: 
+            ...
+            service-X:
+                build: https://github.com/my-company/my-project.git
+                image: my-service-X-image-name
+            ...
+        ```   
+    - The `image` here refers to the name when this image will be build
+    - The `container_name` here refers to the name when this container will be running
+
+       
+
+    
+  
+```{ 
 version: '3'
 services:
     mongodb:
@@ -285,12 +449,79 @@ services:
             - ME+CONFIG MONGODB_ADMINUSERNAME=admin
             - ME_CONFIG_MONGODB_ADMINPASSWORD=password
             - ME_CONFIG_MONGODB_SERVER=mongodb
+}
 ```
 
-Execute the command (no containers should be running): `docker-compose -f mongo.yaml up` and 
 
 
 
+
+ 
+    
+# Environment Variables from a file (env_file)
+
+As not to insert Environment Variables on the fly it's best practice to put values into file. Those are used with Docker Compose and Docker Stack. It has nothing to do with ENV, ARG, or anything Docker-specific explained above. It’s exclusively a docker-compose.yml thing.
+
+
+- **(0) Project Directory Creation**
+ 
+    A. Make a folder with the files used in this Docker image
+    B. `cd` to this Directory
+
+- **(1) Create a `.env` file**
+    A. Create a file which will contain all the variables called `.env`
+       
+       Using `git` you may hide this file or give permissions to specific users to access it
+       
+    B. This `.env` file will contain the classic Linux Environment Variables syntax:
+    
+    ```
+    MYVAR=TEST_VAR_2
+    ```
+    
+- **(2) Create a Dockerfile**
+
+    A. Create a file named `DockerFile`
+    B. Include the following lines in the `DockerFile` file: 
+
+    ```
+    FROM ubuntu
+    WORKDIR /home/admin/docker_projects/proj2
+
+    ARG my_arg
+    RUN echo $my_arg
+    
+    ENV my_var=$my_arg
+    ENTRYPOINT echo $my_var
+    ```
+
+- **(3) Build an image** based on this dockerfile:
+
+    After saving the `DockerFile` file and while you are inside this directory execute:
+
+    `docker build -t my_proj2 --build-arg my_arg="TEST_VAR" .`
+    
+    As you will see during the build the value TEST_VAR will be printed
+
+- **(4) Run the image** as a container:
+
+    A. **Without** Environment Variable
+
+    ` docker run my_proj2`
+    
+     As you will see the value **TEST_VAR** will be printed
+    
+     B. **With** Environment Variable
+
+    ` docker run --env my_var='TEST_VAR2' my_proj2`
+    
+     As you will see the value **TEST_VAR2** will be printed
+
+ 
+ 
+
+   [Text](https:///.com) 
+   
 
 
 
@@ -307,7 +538,9 @@ Execute the command (no containers should be running): `docker-compose -f mongo.
 - [Understanding and Building Docker Images](https://jfrog.com/knowledge-base/a-beginners-guide-to-understanding-and-building-docker-images/)
 - [Dockerfile](https://kapeli.com/cheat_sheets/Dockerfile.docset/Contents/Resources/Documents/index)
 - [Pass Docker Environment Variables During The Image Build](https://vsupalov.com/docker-build-pass-environment-variables/)
-
+- [Docker Compose will BLOW your MIND -Video](https://www.youtube.com/watch?v=DM65_JyGxCo)
+- [Key features and use cases](https://docs.docker.com/compose/features-uses/)
+- [Docker Compose](https://www.baeldung.com/ops/docker-compose)
 
 ```{ - [Text](https:///.com) }
 ```
