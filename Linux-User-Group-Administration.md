@@ -2,6 +2,35 @@
 
 Proper User Account Management enables Linux to enforce access controls (permissions) and audit who does what on the system. This authentication provides access to resources and a customized, user-specific environment.
 
+
+- #### 1. [Users Management](#Users-Management)
+    - ##### 1.1. [`/etc/passwd` File](#/etc/passwd-File)
+    - ##### 1.2. [`/etc/passwd` Fields](#/etc/passwd-Fields)
+    - ##### 1.3. [Add Users (Actual & System Users)](#Add-Users-(Actual-Users-&-System-Users))
+    - ##### 1.4. [Remove Users (Actual & System Users)](#Remove-Users-(Actual-Users-&-System-Users))
+    - ##### 1.5. [Set Password for Users](#Set-Password-for-Users)
+    - ##### 1.6. [Modify Users' info](#Modify-Users'-info)
+    - ##### 1.7. [`/etc/shadow` File](#/etc/shadow-File)
+    - ##### 1.8. [`/etc/passwd` Fields](#/etc/passwd-Fields)
+
+- #### 2. [Group Management](#Group-Management)
+    - ##### 2.1. [`/etc/group` File](#/etc/group-File)
+    - ##### 2.2. [`/etc/group` Fields](#/etc/group-Fields)
+    - ##### 2.3. [Add Groups](#Add-Groups)
+    - ##### 2.4. [Remove Groups](#Remove-Groups)
+    - ##### 2.5 [Practical Groups Management Examples](#Practical-Groups-Management-Examples)
+        - ##### 2.3.1 [SSH Group](#SSH-Group)
+
+- #### 3. [Permissions](#Permissions)
+    - ##### 3.1. [Setting Permissions](#Setting-Permissions)
+    - ##### 3.2. [Setting Permissions with numerical method](#Setting-Permissions-with-numerical-method)
+    - ##### 3.3. [Special Permissions](#Special-Permissions)
+    - ##### 3.4. [Setting Special Permissions](#Setting-Special-Permissions)
+    - ##### 3.5 [Setting Special Permissions with numerical method](#Setting-Special-Permissions-with-numerical-method)
+
+- #### 4. [References](#References-and-Appendix)
+
+
 By running the basic command `ls -l` in any Linux directory, you can see a quick overview of each file or directory that is a part of that directory, including its size, last modification date, owner (user), group membership, and access mode:
 
 <img src="images/ls-l.jpg" alt="ls -l" width="500px">
@@ -26,13 +55,13 @@ Users must authenticate to any system they need to use. The user's identity is b
 
 
 
-### `/etc/passwd` File:
+### `/etc/passwd` File
 An Important File for System User Management contains **All Users Information** (Actual users & System* Users)
 - `cat /etc/passwd`: prints All Users info 
     - `cat /etc/passwd | wc -l`: prints the number of all users
     - `cat /etc/passwd | grep [USERNAME]`: print the line of the particular [USERNAME]
 
-### `/etc/passwd` Fields: 
+### `/etc/passwd` Fields
 Contains one entry per line for each user. Fields are separated by a colon (:) symbol. Total of seven fields as follows: 
 
 <img src="images/passwd-file.jpg" alt="passwd" width="500px">
@@ -60,7 +89,7 @@ Contains one entry per line for each user. Fields are separated by a colon (:) s
 - In the `/etc/shadow` file (hashed password is not the actual password it the hashed version).
 
 
-### Add Users (Actual Users & System Users):
+### Add Users (Actual Users & System Users)
 
  | Command  | Description|
  |---|---| 
@@ -72,7 +101,7 @@ Contains one entry per line for each user. Fields are separated by a colon (:) s
 - You may change the default way that you add users via `cat /etc/default/useradd` which sets the defaults for user's add.
 
 
-### Remove Users (Actual Users & System Users):
+### Remove Users (Actual Users & System Users)
 
  | Command  | Description|
  |---|---| 
@@ -90,7 +119,7 @@ When you create a user as admin you didn't set a password for this user so you n
 |```sudo passwd [USERNAME]```| Change userpassword |  
  
 
-### Modify Users' info:
+### Modify Users' info
 
 | Command  | Description|
 |---|---| 
@@ -109,7 +138,7 @@ When you create a user as admin you didn't set a password for this user so you n
 - You may execute the same command with the `gpasswd` command (i.e. `sudo gpasswd -aG [GROUPNAME] [USERNAME]` 
 
  
-### `/etc/shadow` File:
+### `/etc/shadow` File
 
 Stores the hashed passphrase (or “hash”) format for Linux user account with additional properties related to the user password
 
@@ -117,7 +146,7 @@ Stores the hashed passphrase (or “hash”) format for Linux user account with 
     - `cat /etc/shadow | wc -l`: prints the number of all users hash passwords
     - `cat /etc/shadow | grep [USERNAME]`: print the line of the particular [USERNAME]
 
-### `/etc/passwd` Fields: 
+### `/etc/passwd` Fields
 Contains one entry per line for each user. Fields are separated by a colon (:) symbol. Total of seven fields as follows: 
 
 <img src="images/shadow-file.jpg" alt="passwd" width="500px">
@@ -147,13 +176,15 @@ It's more efficient to group user accounts with similar access requirements than
 - Each user from the `/etc/passwd` file belongs to one primary group. There is no difference between **primary** and **supplementary** groups, any of the groups can be primary and/or supplementary, it is just a reference, if a particular group is assigned to a user in the `/etc/passwd` as the one (primary) group.
 
 
-### `/etc/group` File:
+### `/etc/group` File
+
 Similar to the `/etc/passwd` file above, the `/etc/group` file contains group account information:
 - `cat /etc/group`: prints All Groups info 
     - `cat /etc/group | wc -l`: prints the number of all groups
     - `cat /etc/group | grep [GROUP_NAME]`: print the line of the particular [GROUP_NAME]
 
-### `/etc/group` Fields: 
+### `/etc/group` Fields
+
 Contains one entry per line for each group. Fields are separated by a colon (:) symbol. Total of seven fields as follows: 
 
 <img src="images/etc-group.jpg" alt="groups" width="500px">
@@ -166,7 +197,7 @@ Contains one entry per line for each group. Fields are separated by a colon (:) 
 4. **username-list**: List of users that are members of the group
 
 
-### Add Groups:
+### Add Groups
 
  | Command  | Description|
  |---|---| 
@@ -177,7 +208,7 @@ Contains one entry per line for each group. Fields are separated by a colon (:) 
 - When you create a new user a new group with this user name is created as well
 - Best practices is not used use group password
 
-### Remove Groups:
+### Remove Groups
 
  | Command  | Description|
  |---|---| 
@@ -186,9 +217,9 @@ Contains one entry per line for each group. Fields are separated by a colon (:) 
 
 
 
-### Practical Groups Management Examples:
+### Practical Groups Management Examples
 
-#### **SSH Group**:
+#### **SSH Group**
 A practical example of group management is to give SSH access to users. In the `/etc/ssh/sshd_config` file, you can modify who can access the server via the SSH command by including the line `AllowUsers [USERNAME_A] [USERNAME_B] [USERNAME_C]`. However, instead of adding or removing each user every time in this file, which may cause you to forget someone, it is better practice to include the line `AllowGroups [SSH-ACCESS-GROUP]` and add all the users you want to this particular group `[SSH-ACCESS-GROUP]`.
 
 
@@ -266,6 +297,7 @@ We need to pass a fourth, preceding digit in our chmod command:
  |---|---| 
  |`chmod X### [filename] or [dir]`| Set Up Special Permissions on [filename] or [dir]|  
 
+
 Where `X` has the following options:
 * Start at 0
 * SUID = 4
@@ -274,15 +306,17 @@ Where `X` has the following options:
 
 
  
-**References**: 
-- [How to manage users and groups in Linux](https://www.redhat.com/sysadmin/linux-user-group-management)
-- [Video: Linux Crash Course - Managing Users](https://www.youtube.com/watch?v=19WOD84JFxA)
-- [Understanding /etc/passwd File Format](https://www.cyberciti.biz/faq/understanding-etcpasswd-file-format/)
-- [Understanding /etc/shadow file format on Linux](https://www.cyberciti.biz/faq/understanding-etcshadow-file/)
-- [Understanding /etc/group file](https://www.thegeekdiary.com/etcgroup-file-explained/)
-- [Video: Managing Groups](https://www.youtube.com/watch?v=GnlgAD8-GhE)
-- [CAMMS Linux-Commands](https://github.com/jasonjamsden/CAMMS_Tutorials/tree/main/Linux-Commands)
-- [Linux File Permissions, chmod, & umask](https://tutonics.com/2012/12/linux-file-permissions-chmod-umask.html)
-- [Linux permissions: SUID, SGID, and sticky bit](https://www.redhat.com/sysadmin/suid-sgid-sticky-bit)
-- [Text](https:///.com)
+# References and Appendix 
 
+- #### [How to manage users and groups in Linux](https://www.redhat.com/sysadmin/linux-user-group-management)
+- #### [Video: Linux Crash Course - Managing Users](https://www.youtube.com/watch?v=19WOD84JFxA)
+- #### [Understanding /etc/passwd File Format](https://www.cyberciti.biz/faq/understanding-etcpasswd-file-format/)
+- #### [Understanding /etc/shadow file format on Linux](https://www.cyberciti.biz/faq/understanding-etcshadow-file/)
+- #### [Understanding /etc/group file](https://www.thegeekdiary.com/etcgroup-file-explained/)
+- #### [Video: Managing Groups](https://www.youtube.com/watch?v=GnlgAD8-GhE)
+- #### [CAMMS Linux-Commands](https://github.com/jasonjamsden/CAMMS_Tutorials/tree/main/Linux-Commands)
+- #### [Linux File Permissions, chmod, & umask](https://tutonics.com/2012/12/linux-file-permissions-chmod-umask.html)
+- #### [Linux permissions: SUID, SGID, and sticky bit](https://www.redhat.com/sysadmin/suid-sgid-sticky-bit)
+
+```{ - [Text](https:///.com) }
+```
